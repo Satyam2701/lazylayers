@@ -335,12 +335,16 @@
     left: 0;
     right: 0;
     text-align: center;
-    padding: 8px 14px;
+    padding: 8px 14px 10px;
     font-size: 11px;
     color: var(--text3);
     background: var(--bg);
     border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
+  .footer-coffee { color: var(--text3); }
   .footer a {
     color: var(--text2);
     text-decoration: none;
@@ -352,9 +356,115 @@
     color: var(--text1);
     border-bottom-color: var(--text1);
   }
+
+  /* ── Welcome Screen ── */
+  #welcome-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px 48px;
+    min-height: 444px;
+    text-align: center;
+  }
+  .welcome-logo {
+    width: 68px; height: 68px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .welcome-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .welcome-title {
+    font-size: 22px; font-weight: 700;
+    color: var(--text1); letter-spacing: -0.6px;
+    margin-bottom: 3px;
+  }
+  .welcome-by {
+    font-size: 11px; color: var(--text3);
+    margin-bottom: 14px; font-weight: 500;
+  }
+  .welcome-tagline {
+    font-size: 12px; color: var(--text2);
+    line-height: 1.65; margin-bottom: 22px;
+    max-width: 240px;
+  }
+  .welcome-features {
+    width: 100%; max-width: 288px;
+    margin-bottom: 24px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .welcome-feature {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .welcome-feature-emoji { font-size: 17px; flex-shrink: 0; }
+  .welcome-feature-name {
+    font-size: 12px; font-weight: 600; color: var(--text1); line-height: 1.3;
+  }
+  .welcome-feature-hint {
+    font-size: 10px; color: var(--text3); margin-top: 1px;
+  }
+  .welcome-cta {
+    width: 100%; max-width: 288px;
+    padding: 13px;
+    border: none; border-radius: 12px;
+    background: #111111; color: #ffffff;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    letter-spacing: 0.1px; cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+    transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+  }
+  .welcome-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
+  .welcome-cta:active { transform: scale(0.98); opacity: 0.85; }
+
+  /* ── Screen transitions ── */
+  #main-screen { display: none; }
 </style>
 </head>
 <body>
+
+<!-- Welcome Screen -->
+<div id="welcome-screen">
+  <div class="welcome-logo">
+    <img id="welcome-logo-img" alt="LazyDesigners" />
+  </div>
+  <div class="welcome-title">LazyLayers</div>
+  <div class="welcome-by">by LazyDesigners</div>
+  <p class="welcome-tagline">Rename hundreds of Figma layers in seconds — no more clicking one by one.</p>
+  <div class="welcome-features">
+    <div class="welcome-feature">
+      <div class="welcome-feature-emoji">🔍</div>
+      <div>
+        <div class="welcome-feature-name">Find &amp; Swap</div>
+        <div class="welcome-feature-hint">Replace any word across all selected layers</div>
+      </div>
+    </div>
+    <div class="welcome-feature">
+      <div class="welcome-feature-emoji">✏️</div>
+      <div>
+        <div class="welcome-feature-name">Add to Name</div>
+        <div class="welcome-feature-hint">Add a prefix or suffix to every layer at once</div>
+      </div>
+    </div>
+    <div class="welcome-feature">
+      <div class="welcome-feature-emoji">🔢</div>
+      <div>
+        <div class="welcome-feature-name">Number Layers</div>
+        <div class="welcome-feature-hint">Auto-number your layers in sequence</div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="welcome-cta" onclick="startUsing()">Start Using →</button>
+</div>
+
+<!-- Main Screen -->
+<div id="main-screen">
 
 <!-- Header -->
 <div class="header">
@@ -471,7 +581,7 @@
 </div>
 
 <!-- Preview -->
-<div class="preview-wrap" style="margin-bottom:36px;">
+<div class="preview-wrap" style="margin-bottom:62px;">
   <div class="preview-header">
     <div class="preview-title">Selected Layers</div>
     <div class="preview-count" id="preview-count">0</div>
@@ -481,12 +591,44 @@
   </div>
 </div>
 
+</div><!-- /main-screen -->
+
 <!-- Footer -->
 <div class="footer">
-  Made with ❤️ by <a href="#" onclick="openLinkedIn(); return false;">Satyam Tiwari</a>
+  <div>Made with ❤️ by <a href="#" onclick="openLinkedIn(); return false;">Satyam Tiwari</a></div>
+  <div class="footer-coffee">Like this plugin? <a href="#" onclick="openCoffee(); return false;">Fuel the lazy designer ☕</a></div>
 </div>
 
 <script>
+  // ── HTML escape helper (fixes XSS: layer names rendered into innerHTML) ──
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Welcome screen ──
+  function showMain() {
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('main-screen').style.display = 'block';
+    // Delay slider positioning until after the block layout has been applied
+    setTimeout(() => moveSlider(0), 10);
+  }
+
+  function startUsing() {
+    try { localStorage.setItem('lazylayers_welcomed', '1'); } catch(e) {}
+    showMain();
+  }
+
+  // Copy logo src to welcome screen (avoids duplicating the large base64)
+  window.addEventListener('load', () => {
+    const src = document.querySelector('.logo-icon img').src;
+    document.getElementById('welcome-logo-img').src = src;
+
+    // Skip welcome screen on return visits
+    let welcomed = false;
+    try { welcomed = !!localStorage.getItem('lazylayers_welcomed'); } catch(e) {}
+    if (welcomed) showMain();
+  });
+
   // ── Tab slider ──
   function switchTab(id, idx) {
     document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
@@ -503,8 +645,6 @@
     slider.style.width = tab.offsetWidth + 'px';
   }
 
-  window.addEventListener('load', () => moveSlider(0));
-
   // ── Selection ──
   window.onmessage = (event) => {
     const msg = event.data.pluginMessage;
@@ -518,22 +658,34 @@
     const list = document.getElementById('preview-list');
     if (msg.count === 0) {
       list.innerHTML = '<div class="preview-empty">Select layers on the canvas to begin</div>';
+      document.getElementById('fr-find').value = '';
     } else {
       list.innerHTML = msg.names.slice(0, 10).map(n =>
-        `<div class="preview-item"><div class="preview-item-dot"></div><div class="preview-item-name">${n}</div></div>`
+        `<div class="preview-item"><div class="preview-item-dot"></div><div class="preview-item-name">${esc(n)}</div></div>`
       ).join('') + (msg.count > 10 ? `<div class="preview-more">+${msg.count - 10} more layers</div>` : '');
-      document.getElementById('fr-find').value = msg.names[0];
+      // Only auto-fill Find field when it is empty (don't overwrite user's input)
+      const findEl = document.getElementById('fr-find');
+      if (!findEl.value) findEl.value = msg.names[0];
     }
   };
 
   // ── Actions ──
+  function notify(message) {
+    // figma.notify() must be called from the main thread; route via postMessage
+    parent.postMessage({ pluginMessage: { type: 'notify', message }}, '*');
+  }
+
   function openLinkedIn() {
     parent.postMessage({ pluginMessage: { type: 'open-url', url: 'https://satyamtiwari.framer.website/' }}, '*');
   }
 
+  function openCoffee() {
+    parent.postMessage({ pluginMessage: { type: 'open-url', url: 'https://buymeacoffee.com/satyamtiwari' }}, '*');
+  }
+
   function doFindReplace() {
     const find = document.getElementById('fr-find').value;
-    if (!find) { alert('Please enter something to find.'); return; }
+    if (!find) { notify('Please enter something to find.'); return; }
     parent.postMessage({ pluginMessage: {
       type: 'find-replace',
       find,
@@ -545,7 +697,7 @@
   function doPrefixSuffix() {
     const prefix = document.getElementById('ps-prefix').value;
     const suffix = document.getElementById('ps-suffix').value;
-    if (!prefix && !suffix) { alert('Enter a prefix or suffix.'); return; }
+    if (!prefix && !suffix) { notify('Enter a prefix or suffix.'); return; }
     parent.postMessage({ pluginMessage: { type: 'prefix-suffix', prefix, suffix }}, '*');
   }
 

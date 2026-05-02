@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 360, height: 480, themeColors: true });
+figma.showUI(__html__, { width: 360, height: 560, themeColors: true });
 
 function sendSelection(): void {
   const sel = figma.currentPage.selection;
@@ -38,9 +38,14 @@ figma.ui.onmessage = (msg: { type: string; [key: string]: unknown }) => {
     sendSelection();
   }
 
+  else if (msg.type === 'notify') {
+    figma.notify(msg.message as string);
+  }
+
   else if (msg.type === 'auto-number') {
     if (sel.length === 0) { figma.notify('Select at least one layer first!'); return; }
-    const start = parseInt(msg.start as string) || 1;
+    const parsed = parseInt(msg.start as string, 10);
+    const start = isNaN(parsed) ? 1 : parsed;
     sel.forEach((node, i) => {
       node.name = `${msg.base as string}${msg.sep as string}${start + i}`;
     });
